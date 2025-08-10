@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distributed File Sharing System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Loading Spinner -->
+    <div id="loading" class="loading hidden">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Error/Success Messages -->
+    <div id="message-container" class="message-container"></div>
+
+    <!-- Login Page -->
+    <div id="login-page" class="page">
+        <div class="container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h1><i class="fas fa-cloud-upload-alt"></i> File Share</h1>
+                    <p>Secure distributed file sharing system</p>
+                </div>
+
+                <div class="auth-tabs">
+                    <button class="tab-btn active" onclick="showLogin()">Login</button>
+                    <button class="tab-btn" onclick="showRegister()">Register</button>
+                </div>
+
+                <!-- Login Form -->
+                <form id="login-form" class="auth-form">
+                    <div class="form-group">
+                        <label for="login-username">Username</label>
+                        <input type="text" id="login-username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </button>
+                </form>
+
+                <!-- Register Form -->
+                <form id="register-form" class="auth-form hidden">
+                    <div class="form-group">
+                        <label for="register-username">Username</label>
+                        <input type="text" id="register-username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-email">Email (Optional)</label>
+                        <input type="email" id="register-email">
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">Password</label>
+                        <input type="password" id="register-password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> Register
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Page -->
+    <div id="dashboard-page" class="page hidden">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-cloud-upload-alt"></i> File Share Dashboard</h1>
+                <div class="header-actions">
+                    <span id="username-display" class="username"></span>
+                    <button class="btn btn-secondary" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="container">
+            <!-- Upload Section -->
+            <div class="upload-section">
+                <div class="upload-card">
+                    <h2><i class="fas fa-upload"></i> Upload Files</h2>
+                    <div class="upload-area" id="upload-area">
+                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                        <p>Drag & drop files here or click to browse</p>
+                        <input type="file" id="file-input" multiple hidden>
+                        <button class="btn btn-primary" onclick="document.getElementById('file-input').click()">
+                            Choose Files
+                        </button>
+                    </div>
+                    <div id="upload-progress" class="hidden">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill"></div>
+                        </div>
+                        <p id="upload-status">Uploading...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Files Section -->
+            <div class="files-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-folder"></i> My Files</h2>
+                    <button class="btn btn-secondary" onclick="refreshFiles()">
+                        <i class="fas fa-refresh"></i> Refresh
+                    </button>
+                </div>
+                <div id="files-list" class="files-list">
+                    <!-- Files will be loaded here -->
+                </div>
+            </div>
+
+            <!-- NEW: Shared Files Section -->
+            <div class="files-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-users"></i> Shared with Me</h2>
+                    <button class="btn btn-secondary" onclick="refreshSharedFiles()">
+                        <i class="fas fa-refresh"></i> Refresh
+                    </button>
+                </div>
+                <div id="shared-files-list" class="files-list">
+                    <!-- Shared files will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div id="share-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-share"></i> Share File</h3>
+                <button class="close-btn" onclick="closeShareModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="share-options">
+                    <div class="share-option">
+                        <input type="radio" id="public-share" name="share-type" value="public" checked>
+                        <label for="public-share">
+                            <i class="fas fa-globe"></i> Public Share
+                            <small>Anyone with the link can access</small>
+                        </label>
+                    </div>
+                    <div class="share-option">
+                        <input type="radio" id="private-share" name="share-type" value="private">
+                        <label for="private-share">
+                            <i class="fas fa-lock"></i> Private Share
+                            <small>Only specific user can access</small>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="private-user-input" class="form-group hidden">
+                    <label for="shared-user-id">User ID to share with:</label>
+                    <input type="number" id="shared-user-id" placeholder="Enter user ID">
+                </div>
+
+                <div class="form-group">
+                    <label for="expiry-hours">Expiry (hours):</label>
+                    <select id="expiry-hours">
+                        <option value="1">1 hour</option>
+                        <option value="6">6 hours</option>
+                        <option value="24" selected>24 hours</option>
+                        <option value="72">3 days</option>
+                        <option value="168">7 days</option>
+                    </select>
+                </div>
+
+                <div id="share-result" class="share-result hidden">
+                    <div class="share-link">
+                        <input type="text" id="share-url" readonly>
+                        <button class="btn btn-primary" onclick="copyToClipboard()">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                    <p class="share-info">Share this link with others to give them access to your file.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeShareModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="generateShareLink()" id="generate-share-btn">
+                    <i class="fas fa-link"></i> Generate Link
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

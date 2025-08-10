@@ -1,0 +1,25 @@
+# Required libraries for Distributed File Sharing System
+
+# C++ Libraries
+libpoco-dev>=1.9.0
+libpoco-data-postgresql-dev>=1.9.0
+libpoco-crypto-dev>=1.9.0
+libpoco-json-dev>=1.9.0
+libpoco-net-dev>=1.9.0
+libpoco-util-dev>=1.9.0
+
+# Build & Development Tools
+cmake>=3.10
+build-essential
+gcc>=7.0
+g++>=7.0
+git
+make
+
+# Database
+yugabytedb>=2.20.0.0
+postgresql-client>=10
+
+# Optional tools
+curl
+python3
